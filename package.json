@@ -1,0 +1,30 @@
+{
+  "name": "game-of-life",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "lint": "eslint src",
+    "start": "react-scripts start",
+    "test": "react-scripts test"
+  },
+  "dependencies": {
+    "react": "^16.1.1",
+    "react-dom": "^16.1.1",
+    "react-redux": "^5.0.6",
+    "redux": "^3.7.2"
+  },
+  "devDependencies": {
+    "eslint-config-react-app": "^4.0.1",
+    "eslint-plugin-react-hooks": "^1.6.0",
+    "husky": "^2.3.0",
+    "prettier": "1.17.1",
+    "react-scripts": "^1.0.17",
+    "redux-devtools-extension": "^2.13.8",
+    "redux-logger": "^3.0.6"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn run lint && CI=true yarn run test"
+    }
+  }
+}
