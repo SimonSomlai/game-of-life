@@ -1,8 +1,6 @@
 # Game of Life
 
 <blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">My first ever attempt at the game of life. Pretty nice 🙌 <a href="https://t.co/XHOYV4EvjJ">pic.twitter.com/XHOYV4EvjJ</a></p>&mdash; Simon Somlai (@SSomlai) <a href="https://twitter.com/SSomlai/status/1135443498256257024?ref_src=twsrc%5Etfw">June 3, 2019</a></blockquote>
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
 
 ## The Challenge
 
