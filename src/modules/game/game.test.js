@@ -2,7 +2,7 @@ import {
   getNextGenerations,
   getNextGenerationForPosition,
   getLiveNeighbours,
-  getDefaultGameState,
+  createGrid,
   getRandom,
 } from "./gameUtils";
 
@@ -72,11 +72,11 @@ test("It calculates default correctly", () => {
 });
 
 test("It generates the right amount rows & columns", () => {
-  const grid10 = getDefaultGameState(10);
+  const grid10 = createGrid(10);
   expect(grid10).toHaveLength(10);
   expect(grid10[6]).toHaveLength(10);
 
-  const grid50 = getDefaultGameState(50);
+  const grid50 = createGrid(50);
   expect(grid50).toHaveLength(50);
   expect(grid50[43]).toHaveLength(50);
 });

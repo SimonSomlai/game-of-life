@@ -1,16 +1,21 @@
-// NPM Modules
 import {combineReducers} from "redux";
 
-// External Modules
-import {actionTypes} from "./gameActions";
-import {getDefaultGameState} from "./gameUtils";
 import {SQUARES} from "../shared/constants";
+import {actionTypes} from "./gameActions";
+import {createGrid} from "./gameUtils";
 
-const defaultState = getDefaultGameState(SQUARES);
+const defaultState = {
+  grid: createGrid(SQUARES),
+  pattern: [],
+};
+
 const gameReducer = (state = defaultState, action) => {
   switch (action.type) {
     case actionTypes.SET_GRID: {
-      return Object.assign([], state, action.payload.grid);
+      return Object.assign({}, state, {grid: action.payload.grid});
+    }
+    case actionTypes.SET_PATTERN: {
+      return Object.assign({}, state, {pattern: action.payload.pattern});
     }
     default: {
       return state;

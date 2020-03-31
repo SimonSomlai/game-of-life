@@ -1,8 +1,8 @@
 import Game from "./Game";
-import gameReducer from "./gameReducer";
 import {
   actions as gameActions,
   actionTypes as gameActionTypes,
 } from "./gameActions";
+import gameReducer from "./gameReducer";
 
 export {Game, gameReducer, gameActions, gameActionTypes};

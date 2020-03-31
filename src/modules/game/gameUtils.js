@@ -64,13 +64,14 @@ export const getLiveNeighbours = (grid, x, y) => {
   return liveNeighbours;
 };
 
-// Generates a SQUARES x SQUARES 2D array with random state
-export const getDefaultGameState = squares => {
+// Creates a SQUARES x SQUARES 2D array with random state
+export const createGrid = (squares, clear = false) => {
   const grid = [];
   for (let column = 0; column < squares; column++) {
     grid[column] = [];
     for (let position = 0; position < squares; position++) {
-      grid[column][position] = getRandom();
+      const value = clear ? 0 : getRandom();
+      grid[column][position] = value;
     }
   }
   return grid;
@@ -83,4 +84,58 @@ export const updateGrid = (grid, x, y) => {
   const newGrid = grid.map(column => column.slice());
   newGrid[x][y] = isAlive ? 0 : 1;
   return newGrid;
+};
+
+const patterns = {
+  twister: [
+    {x: 0, y: 0, value: 1},
+    {x: 0, y: -1, value: 1},
+    {x: 0, y: 1, value: 1},
+  ],
+  stepper: [
+    {x: 0, y: -1, value: 1},
+    {x: 0, y: 1, value: 1},
+    {x: 1, y: 0, value: 1},
+    {x: -1, y: 1, value: 1},
+    {x: 1, y: 1, value: 1},
+  ],
+  eight: [
+    {x: 0, y: -1, value: 1},
+    {x: 0, y: -2, value: 1},
+    {x: 0, y: -3, value: 1},
+    {x: -1, y: -1, value: 1},
+    {x: -1, y: -2, value: 1},
+    {x: -1, y: -3, value: 1},
+    {x: -2, y: -1, value: 1},
+    {x: -2, y: -2, value: 1},
+    {x: -2, y: -3, value: 1},
+    {x: 1, y: 0, value: 1},
+    {x: 1, y: 1, value: 1},
+    {x: 1, y: 2, value: 1},
+    {x: 2, y: 0, value: 1},
+    {x: 2, y: 1, value: 1},
+    {x: 2, y: 2, value: 1},
+    {x: 3, y: 0, value: 1},
+    {x: 3, y: 1, value: 1},
+    {x: 3, y: 2, value: 1},
+  ],
+};
+
+export const getPatternCoordinates = (center, pattern) => {
+  const {x: startX, y: startY} = center;
+  return patterns[pattern].map(({x, y, value}) => ({
+    value,
+    x: (startX + x).mod(SQUARES),
+    y: (startY + y).mod(SQUARES),
+  }));
+};
+
+export const addPatternToGrid = (grid, coordinates) => {
+  return coordinates.reduce(
+    (grid, {x, y, value}) => {
+      grid[x][y] = value;
+      return grid;
+    },
+    [...grid],
+  );
 };

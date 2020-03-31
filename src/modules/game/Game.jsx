@@ -1,19 +1,31 @@
-// NPM Libraries
+import PropTypes from "prop-types";
 import React, {Component, Fragment} from "react";
 import {connect} from "react-redux";
-import PropTypes from "prop-types";
 import {bindActionCreators} from "redux";
+import {createGlobalStyle} from "styled-components";
 
-// External Modules
-import {setGrid} from "./gameActions";
 import {GRID_SIZE, SQUARES, UPDATE_INTERVAL} from "../shared/constants";
-import {getNextGenerations, updateGrid} from "./gameUtils";
-// Components
+import GameControls from "./components/GameControls";
+import PatternOptions from "./components/PatternOptions";
+import {setGrid, setPattern} from "./gameActions";
+import {
+  addPatternToGrid,
+  createGrid,
+  getNextGenerations,
+  getPatternCoordinates,
+  updateGrid,
+} from "./gameUtils";
 
-// Queries & Query Constants
-
-// Assets & Styles
-import "./game.css";
+const GlobalStyle = createGlobalStyle`
+html,
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-family: sans-serif;
+}
+`;
 
 const SQUARE_SIZE = GRID_SIZE / SQUARES;
 class Game extends Component {
@@ -25,6 +37,7 @@ class Game extends Component {
     this.lastSquare = null;
     this.state = {
       isPlaying: false,
+      pattern: null,
     };
   }
 
@@ -39,11 +52,16 @@ class Game extends Component {
 
   render() {
     const {isPlaying} = this.state;
+
     return (
       <Fragment>
-        <button onClick={this.toggleGame} style={{display: "block"}}>
-          {isPlaying ? "Pause" : "Play"}
-        </button>
+        <GlobalStyle />
+        <GameControls
+          toggleGame={this.toggleGame}
+          resetGame={this.resetGame}
+          clearGame={this.clearGame}
+          isPlaying={isPlaying}
+        />
         <canvas
           onMouseMove={this.handleMouseMove}
           onMouseDown={this.toggleDrawing}
@@ -53,14 +71,24 @@ class Game extends Component {
           height={GRID_SIZE}
           ref={this.canvas}
         />
+        <PatternOptions updatePattern={this.updatePattern} />
       </Fragment>
     );
   }
 
   drawGrid = () => {
-    const {grid} = this.props;
+    const {grid, pattern} = this.props;
     const canvas = this.canvas.current;
     const context = canvas.getContext("2d");
+    let stringCoordinates = [];
+
+    if (pattern.length > 0) {
+      stringCoordinates = pattern.map(({x, y}) => {
+        return `${String(x).padStart(String(SQUARES).length, "0")}${String(
+          y,
+        ).padStart(String(SQUARES).length, "0")}`;
+      });
+    }
 
     for (var x = 0; x < GRID_SIZE; x += SQUARE_SIZE) {
       for (var y = 0; y < GRID_SIZE; y += SQUARE_SIZE) {
@@ -76,16 +104,42 @@ class Game extends Component {
           context.fillStyle = "#000";
           context.fillRect(x, y, SQUARE_SIZE, SQUARE_SIZE);
         }
+        if (pattern.length !== 0) {
+          const currentCoordinate = `${String(xIndex).padStart(
+            String(SQUARES).length,
+            "0",
+          )}${String(yIndex).padStart(String(SQUARES).length, "0")}`;
+
+          if (stringCoordinates.includes(currentCoordinate)) {
+            context.fillStyle = "red";
+            context.fillRect(x, y, SQUARE_SIZE, SQUARE_SIZE);
+          }
+        }
       }
     }
 
     context.stroke(); // Draw rectangles
   };
 
+  updatePattern = e => {
+    this.setState({pattern: e.target.value});
+  };
+
+  clearGame = () => {
+    const emptyGrid = createGrid(SQUARES, true);
+    this.props.setGrid(emptyGrid);
+  };
+
+  resetGame = () => {
+    const newGrid = createGrid(SQUARES);
+    this.props.setGrid(newGrid);
+  };
+
   startTimer = () => {
     this.timerId = setTimeout(() => {
       if (this.state.isPlaying) {
         const nextGenerations = getNextGenerations(this.props.grid);
+
         this.props.setGrid(nextGenerations);
         this.startTimer();
       }
@@ -104,6 +158,8 @@ class Game extends Component {
   };
 
   handleClick = event => {
+    if (this.state.pattern) return;
+
     const {grid} = this.props;
     const {offsetX, offsetY} = event.nativeEvent;
     const xIndex = Math.floor(offsetX / SQUARE_SIZE);
@@ -113,13 +169,34 @@ class Game extends Component {
   };
 
   toggleDrawing = () => {
-    if (this.isDragging) this.lastSquare = null;
-    this.isDragging = !this.isDragging;
+    if (this.state.pattern !== null) {
+      const newGrid = addPatternToGrid(this.props.grid, this.props.pattern);
+      this.props.setGrid(newGrid);
+    } else {
+      if (this.isDragging) this.lastSquare = null;
+      this.isDragging = !this.isDragging;
+    }
   };
 
   handleMouseMove = event => {
-    if (!this.isDragging) return;
+    if (this.isDragging) this.handleDrawing(event);
+    if (this.state.pattern) this.handlePatternPreview(event);
+  };
 
+  handlePatternPreview = event => {
+    const {offsetX, offsetY} = event.nativeEvent;
+    const currentSquare = {
+      x: Math.floor(offsetX / SQUARE_SIZE),
+      y: Math.floor(offsetY / SQUARE_SIZE),
+    };
+    const coordinates = getPatternCoordinates(
+      currentSquare,
+      this.state.pattern,
+    );
+    this.props.setPattern(coordinates);
+  };
+
+  handleDrawing = event => {
     const {offsetX, offsetY} = event.nativeEvent;
     const currentSquare = {
       x: Math.floor(offsetX / SQUARE_SIZE),
@@ -151,10 +228,12 @@ Game.propTypes = {
 
 const mapDispatchToProps = dispatcher => ({
   setGrid: bindActionCreators(setGrid, dispatcher),
+  setPattern: bindActionCreators(setPattern, dispatcher),
 });
 
 const mapStateToProps = state => ({
-  grid: state.gameState,
+  grid: state.gameState.grid,
+  pattern: state.gameState.pattern,
 });
 
 export default connect(
