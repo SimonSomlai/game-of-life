@@ -1,16 +1,14 @@
-import {SQUARES} from "../shared/constants";
-
-export const getNextGenerations = grid => {
+export const getNextGenerations = (grid, squares) => {
   return grid.map((column, x) => {
     return column.map((position, y) => {
       const isAlive = !!position;
-      return getNextGenerationForPosition(grid, isAlive, x, y);
+      return getNextGenerationForPosition(grid, isAlive, x, y, squares);
     });
   });
 };
 
-export const getNextGenerationForPosition = (grid, isAlive, x, y) => {
-  const liveNeighbours = getLiveNeighbours(grid, x, y);
+export const getNextGenerationForPosition = (grid, isAlive, x, y, squares) => {
+  const liveNeighbours = getLiveNeighbours(grid, x, y, squares);
   switch (true) {
     // Any live cell with fewer than two live neighbours dies, as if by underpopulation.
     case isAlive && liveNeighbours < 2: {
@@ -40,7 +38,7 @@ Number.prototype.mod = function(n) {
   return ((this % n) + n) % n;
 };
 
-export const getLiveNeighbours = (grid, x, y) => {
+export const getLiveNeighbours = (grid, x, y, squares) => {
   const neighbours = [
     [-1, -1], // Top left
     [0, -1], // Top center
@@ -54,8 +52,8 @@ export const getLiveNeighbours = (grid, x, y) => {
 
   const liveNeighbours = neighbours.reduce((total, coordinates) => {
     const [xOffset, yOffset] = coordinates;
-    const neighbourX = (x + xOffset).mod(SQUARES);
-    const neighbourY = (y + yOffset).mod(SQUARES);
+    const neighbourX = (x + xOffset).mod(squares);
+    const neighbourY = (y + yOffset).mod(squares);
     const isLiveNeighbour = !!grid[neighbourX][neighbourY];
     if (isLiveNeighbour) total += 1;
     return total;
